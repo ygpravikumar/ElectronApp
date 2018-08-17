@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Image To Video</title>
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="col-12" style="padding-top:20px;">
+            <div class="input-group mb-3">
+                <label for="" class="col-4">Source Directory</label>
+                <input id="src_directory_selector" type="file" webkitdirectory style="display:none;" />
+                <input type="text" id="source_directory" disabled class="form-control" placeholder="Source directory" aria-label="Source directory"
+                    aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="src_directory_btn" class="btn btn-outline-secondary" type="button">Browse</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="input-group mb-3">
+                <label for="" class="col-4">Target Directory</label>
+                <input id="target_directory_selector" type="file" webkitdirectory style="display:none;" />
+                <input type="text" id="target_directory" disabled class="form-control" placeholder="Target directory" aria-label="Target directory"
+                    aria-describedby="basic-addon2">
+                <div class="input-group-append">
+                    <button id="tgt_directory_btn" class="btn btn-outline-secondary" type="button">Browse</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="input-group mb-3">
+                <label for="" class="col-4">Number of CPU's</label>
+                <input type="text" id="num_cpus" disabled class="form-control" placeholder="Number of CPU's" aria-label="Number of CPU's"
+                    aria-describedby="basic-addon2">
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="input-group mb-3">
+                <label for="" class="col-4">Number of Images</label>
+                <input type="number" min="5" max="200" id="num_images" class="form-control" placeholder="Number of Images" aria-label="Number of Images"
+                    aria-describedby="basic-addon2">
+            </div>
+        </div>
+        <div class="col-12 text-right">
+            <button id="generate_video" class="btn btn-primary">Generate</button>
+        </div>
+    </div>
+
+    <script>
+        window.$ = window.jQuery = require('jquery');
+        numCPUs = require('os').cpus().length;
+        $('#num_cpus').val(numCPUs);
+        localStorage.setItem('number_of_cpus', numCPUs);
+
+        if (typeof localStorage === "undefined" || localStorage === null) {
+            var LocalStorage = require('node-localstorage').LocalStorage;
+            localStorage = new LocalStorage('./scratch');
+        }
+
+        $('#src_directory_btn').click(_ => {
+            $('#src_directory_selector').click();
+        })
+
+        $('#src_directory_selector').change(_ => {
+            var dir_path = $('#src_directory_selector')[0].files[0].path;
+            $('#source_directory').val(dir_path);
+            localStorage.setItem('source_directory', dir_path);
+        })
+
+        $('#tgt_directory_btn').click(_ => {
+            $('#target_directory_selector').click();
+        })
+
+        $('#target_directory_selector').change(_ => {
+            var dir_path = $('#target_directory_selector')[0].files[0].path;
+            $('#target_directory').val(dir_path);
+            localStorage.setItem('target_directory', dir_path);
+        })
+
+        $('#generate_video').click(_ => {
+            localStorage.setItem('number_of_images', $('#num_images').val());
+            generate_video();
+        });
+
+        // Function to generate video from the source images
+        function generate_video() {
+            // mogrify and copy all images to the target folder.
+            // using the images create video using ffmpeg
+            "use strict"
+
+            // The path to the .bat file
+            var myBatFilePath = "magic_execute.bat";
+
+            const spawn = require('child_process').spawn;
+            //const bat = spawn('cmd.exe', ['/c', myBatFilePath]);
+            const bat = spawn(myBatFilePath, [localStorage.getItem('source_directory'), localStorage.getItem('target_directory'), localStorage.getItem('number_of_cpus'), localStorage.getItem('number_of_images')]);
+
+            // Handle normal output
+            bat.stdout.on('data', (data) => {
+                // As said before, convert the Uint8Array to a readable string.
+                var str = String.fromCharCode.apply(null, data);
+                console.info(str);
+            });
+
+            // Handle error output
+            bat.stderr.on('data', (data) => {
+                // As said before, convert the Uint8Array to a readable string.
+                var str = String.fromCharCode.apply(null, data);
+                console.error(str);
+            });
+
+            // Handle on exit event
+            bat.on('exit', (code) => {
+                var preText = `Child exited with code ${code} : `;
+
+                switch (code) {
+                    case 0:
+                        console.info(preText + "Something unknown happened executing the batch.");
+                        break;
+                    case 1:
+                        console.info(preText + "The file already exists");
+                        break;
+                    case 2:
+                        console.info(preText + "The file doesn't exists and now is created");
+                        break;
+                    case 3:
+                        console.info(preText + "An error ocurred while creating the file");
+                        break;
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

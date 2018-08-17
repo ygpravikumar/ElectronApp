@@ -1,0 +1,4 @@
+Use Portable versions of ImageMagick and FFMpeg
+Also keep python portable version.
+Use IVR Logo.
+
