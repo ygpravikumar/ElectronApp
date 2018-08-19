@@ -43,18 +43,36 @@
         <div class="col-12">
             <div class="input-group mb-3">
                 <label for="" class="col-4">Number of Images</label>
-                <input type="number" min="5" max="200" id="num_images" class="form-control" placeholder="Number of Images" aria-label="Number of Images"
+                <input type="number" disabled min="5" max="200" id="num_images" class="form-control" placeholder="Number of Images" aria-label="Number of Images"
                     aria-describedby="basic-addon2">
             </div>
         </div>
         <div class="col-12 text-right">
             <button id="generate_video" class="btn btn-primary">Generate</button>
         </div>
+        <div class="videocontainer col-12" id="videocontainer" style="padding-top:10px;">
+            
+        </div>
     </div>
 
     <script>
         window.$ = window.jQuery = require('jquery');
         numCPUs = require('os').cpus().length;
+        
+        var fs = require('fs');
+        function get_num_images(source_directory){
+            fs.readdir(source_directory, (err, file_list) => {
+                var num_images = 0;
+                for (var i = 0, path; path = file_list[i]; i++) {
+                    if(path.indexOf('.jpg'))
+                        ++num_images;
+                }
+                localStorage.setItem('number_of_images', num_images);
+                $('#num_images').val(num_images);
+            });
+        }
+        
+
         $('#num_cpus').val(numCPUs);
         localStorage.setItem('number_of_cpus', numCPUs);
 
@@ -71,6 +89,15 @@
             var dir_path = $('#src_directory_selector')[0].files[0].path;
             $('#source_directory').val(dir_path);
             localStorage.setItem('source_directory', dir_path);
+            $('#src_directory_selector')[0].files = null;
+            $('#src_directory_selector').val("");
+            $('#videocontainer').html('');
+            if(!check_source_target_validity()){
+                $('#source_directory').val("");
+                localStorage.setItem('source_directory', "");
+            }
+            else
+                get_num_images(dir_path);
         })
 
         $('#tgt_directory_btn').click(_ => {
@@ -80,13 +107,30 @@
         $('#target_directory_selector').change(_ => {
             var dir_path = $('#target_directory_selector')[0].files[0].path;
             $('#target_directory').val(dir_path);
+            $('#target_directory_selector')[0].files = null;
+            $('#target_directory_selector').val("");
             localStorage.setItem('target_directory', dir_path);
+            $('#videocontainer').html('');
+            if(!check_source_target_validity()){
+                $('#target_directory').val("");
+                localStorage.setItem('target_directory', "");
+            }
         })
 
         $('#generate_video').click(_ => {
             localStorage.setItem('number_of_images', $('#num_images').val());
             generate_video();
         });
+
+        function check_source_target_validity(){
+            var src_dir = localStorage.getItem('source_directory');
+            var target_dir = localStorage.getItem('target_directory');
+            if(src_dir == target_dir){
+                window.alert("Source and target directories cannot be same.");
+                return false;
+            }
+            return true;
+        }
 
         // Function to generate video from the source images
         function generate_video() {
@@ -118,6 +162,16 @@
             // Handle on exit event
             bat.on('exit', (code) => {
                 var preText = `Child exited with code ${code} : `;
+
+                if(code == 0)
+                {
+                    var mp4_path = localStorage.getItem('target_directory');
+                    mp4_path = mp4_path.split("\\").join("/");
+                    mp4_path = "file:///" +  mp4_path + '/output.mp4';
+                    $('#videocontainer').html('<video id="v1" controls class="videoInsert"><source  id="videosource" type="video/mp4;" src="' + mp4_path + '" /></video>');
+                    $('#videosource').attr('src', mp4_path);
+
+                }
 
                 switch (code) {
                     case 0:

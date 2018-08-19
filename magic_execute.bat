@@ -11,8 +11,8 @@ set loopcount=%4
 python ./changes_name_mogrify.py
 
 REM call mogrify to minimize/crop the images
-FOR /L %%A IN (0,1,14) DO (
-  start /B magick mogrify -resize 1280x720 -strip -define jpeg:extent=40kb -path %target_directory%/ %target_directory%/%%A-*.jpg
+FOR /L %%A IN (0,1,13) DO (
+  start /B magick.exe mogrify -resize 1280x720 -strip -define jpeg:extent=40kb -path %target_directory%/ %target_directory%/%%A-*.jpg
 )
 :LOOP
 tasklist /FI "IMAGENAME eq magick.exe" 2>NUL | find /I /N "magick.exe">NUL
@@ -20,10 +20,10 @@ if %ERRORLEVEL%==0 (
     ping localhost -n 1 >nul
     GOTO LOOP
 )
-REM call python to reset file names for ffmpeg
+call python to reset file names for ffmpeg
 python ./changes_name_ffmpeg.py
 REM call ffmpeg to create the video
-F:\Img_to_Video\ffmpeg\bin\ffmpeg.exe -framerate 25  -start_number 1 -pattern_type sequence -i %target_directory%/%%d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p %target_directory%/output.mp4
+.\ffmpeg\bin\ffmpeg.exe -framerate 25  -start_number 1 -pattern_type sequence -i %target_directory%/%%d.jpg -c:v libx264 -profile:v high -crf 20 -pix_fmt yuv420p %target_directory%/output.mp4
 
 set "stopTime=%time%"
 call :timeDiff diff startTime stopTime
