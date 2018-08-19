@@ -1,0 +1,9 @@
+Download the repository.
+using ImageMagick-7.0.8-10-Q16-HDRI-x64-static.exe install image magick.
+make use python 2 [tested on 2.7.3] is installed and available in path.
+	Open a command prompt and type python --version, if you see Python 2.7.x in the response good to go.
+Install npm [tested on 5.3.0]
+Open a command prompt and move to repository folder.
+with repository as current working directory in the command prompt type 
+	1) npm install and then 
+	2) npm start.
