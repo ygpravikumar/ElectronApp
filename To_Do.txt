@@ -1,4 +1,17 @@
-Use Portable versions of ImageMagick and FFMpeg
-Also keep python portable version.
 Use IVR Logo.
 
+Image Magick
+	Portable version is causing the app slower [For 130 5k images we loose 2 seconds]
+	Better to go with installer.
+	
+ffmpeg
+	Portable version did not result in significant time delay.
+	
+python 
+	Portable veersion need to take alook
+	
+Ability to apply cropping for images
+	Load the first image in folder and allow user to select the crop region
+	Send the crop region to magick to apply cropping.
+	Look into cropper.js to load and get the croppping parameters.
+	
