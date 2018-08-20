@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <title>Image To Video</title>
     <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="app.css">
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
 </head>
 
-<body>
-    <div class="container">
+<body id="appbody">
+    <div class="container-fluid">
         <div class="col-12" style="padding-top:20px;">
             <div class="input-group mb-3">
                 <label for="" class="col-4">Source Directory</label>
@@ -58,7 +59,10 @@
     <script>
         window.$ = window.jQuery = require('jquery');
         numCPUs = require('os').cpus().length;
-        
+        localStorage.setItem("source_directory", "");
+        localStorage.setItem("target_directory", "");
+        localStorage.setItem('number_of_images', "");
+        localStorage.setItem('number_of_cpus', "");
         var fs = require('fs');
         function get_num_images(source_directory){
             fs.readdir(source_directory, (err, file_list) => {
@@ -132,12 +136,35 @@
             return true;
         }
 
+        function validate_inputs(){
+            var source_directory = localStorage.getItem("source_directory");
+            var target_directory = localStorage.getItem("target_directory");
+            var num_images = localStorage.getItem('number_of_images');
+            var num_cpus = localStorage.getItem('number_of_cpus');
+            
+            if(!source_directory || source_directory.length <=0){
+                window.alert("Please check source directory path.");
+                return false;    
+            }
+            if(!target_directory || target_directory.length <=0){
+                window.alert("Please check target directory path.");
+                return false;
+            }
+            if(num_images <= 0){
+                window.alert("No Images present in source directory");
+                return false;    
+            }
+            return true;
+        }
+
         // Function to generate video from the source images
         function generate_video() {
             // mogrify and copy all images to the target folder.
             // using the images create video using ffmpeg
             "use strict"
 
+            if(!validate_inputs())
+                return;
             // The path to the .bat file
             var myBatFilePath = "magic_execute.bat";
 
